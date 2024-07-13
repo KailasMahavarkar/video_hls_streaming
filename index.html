@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>HLS Video Player</title>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				margin: 20px;
+			}
+			#videoPlayer {
+				width: 100%;
+				max-width: 800px;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>HLS Video Player</h1>
+		<video id="videoPlayer" controls autoplay></video>
+		<script defer>
+			document.addEventListener("DOMContentLoaded", function () {
+				const video = document.getElementById("videoPlayer");
+				const videoSrc = "https://duixd1u8xip3.cloudfront.net/output.m3u8";
+
+				if (Hls.isSupported()) {
+					var hls = new Hls();
+					hls.loadSource(videoSrc);
+					hls.attachMedia(video);
+					hls.on(Hls.Events.MEDIA_ATTACHED, function () {
+						console.log("HLS.js attached");
+						hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+							console.log(
+								"Manifest parsed, found " + data.levels.length + " quality level(s)"
+							);
+							video.play().catch(function (error) {
+								console.error("Error playing video:", error);
+							});
+						});
+					});
+					hls.on(Hls.Events.ERROR, function (event, data) {
+						console.error("HLS.js error:", data);
+					});
+				} else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+					video.src = videoSrc;
+					video.addEventListener("loadedmetadata", function () {
+						console.log("Native HLS support");
+						video.play().catch(function (error) {
+							console.error("Error playing video:", error);
+						});
+					});
+				} else {
+					console.error("HLS.js or native HLS not supported");
+				}
+			});
+		</script>
+		<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+	</body>
+</html>
